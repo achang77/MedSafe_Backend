@@ -6,7 +6,7 @@
 import xlrd
 import xlwt
 import os
-from Levenshtein import *
+#from Levenshtein import *
 import codecs
 
 remUnit = __import__('3_removeUnits')

@@ -19,7 +19,7 @@ remUnits = remUnit.remUnits
 #global definition for browser and its settings
 mech = mechanize.Browser()
 mech.addheaders = [('User-Agent', 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)')]
-mech.set_handle_robots(False)
+#mech.set_handle_robots(False)
 
 #strip table row for data
 def dataStrip(row):

@@ -1,0 +1,9 @@
+{
+    "python.pythonPath": "/anaconda3/envs/python27/bin/python",
+    "files.exclude": {
+        "**/.classpath": true,
+        "**/.project": true,
+        "**/.settings": true,
+        "**/.factorypath": true
+    }
+}

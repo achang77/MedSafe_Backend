@@ -17,6 +17,14 @@ from math import log
 from operator import itemgetter, attrgetter
 import random
 from textclean.textclean import textclean
+import pandas as pd
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score, f1_score
+from numpy import array
+
+
 
 data_dir = './../Unique_Data/'
 #keyword_dir = './../../Research Data/Keyword_Lists'
@@ -218,7 +226,7 @@ def classify():
         reason = (worksheet.cell_value(i, Reason_Index).strip()).encode('utf-8')
         action = (worksheet.cell_value(i, Action_Index).strip()).encode('utf-8')
         fault_class = str(worksheet.cell_value(i, Fault_Index).strip()).encode('utf-8')
-        train_set.append((number, reason,fault_class))
+        train_set.append((number, reason, fault_class))
         train_text = train_text+' '+reason
     print str(len(train_set))
     # Feature Selection
@@ -232,62 +240,99 @@ def classify():
     features.sort();
     features = sorted(features, key = itemgetter(0), reverse = True)
 
-    # Total number of recalls in the training set
-    N =  len(train_set);
-    # Number of recalls that are computer-related
-    C_list = [(w, u, v) for (w, u,v) in train_set if v != 'Not_Computer'];
-    C = len(C_list);
-    # Prior Probabilities
-    Pc = float(C)/float(N);
-    Pc_ = 1-Pc;
+    print 'Training'
+    df = pd.DataFrame(train_set, columns=['id','reason','fault_class'])
+    xtrain = df.reason
 
-    # Training - Using the highest score features
-    [P_tc, P_tc_] = training(train_set, features[1:len(features)/2])
+    ytrain = df.fault_class
+    
+    def f(s):
+        if s == 'Not_Computer':
+            return 0
+        else:
+            return 1
 
+    ytrain = ytrain.apply(f)
+    
+    xtrain = xtrain.str.lower()
+    #pass in the features
+    vect = CountVectorizer(vocabulary=features, binary=True)
+    xtrain = vect.fit_transform(xtrain)
 
-    # Testing
+    nb = MultinomialNB()
+
+    nb.fit(xtrain, ytrain)
+
+    print 'Testing'
+
+    df_list = []
     for filename in test_files:
-        test_set = [];
-        test_workbook = xlrd.open_workbook(data_dir+filename+'.xls')
-        try:
-            worksheet = test_workbook.sheet_by_index(0)
-        except:
-            worksheet = test_workbook.sheet_by_index(0)
-        num_rows = worksheet.nrows
-        num_cols = worksheet.ncols
+        df_test = pd.read_excel(data_dir+filename+'.xls')
+        xtest = df_test['Reason for Recall']
+        xtest = xtest.str.lower()
+        xtest = vect.fit_transform(xtest.values.astype('U'))
+        ypred = nb.predict(xtest)
+        # pd.concat([df_test, pd.DataFrame(ypred,columns = ['predicted fault_class'])])
+        # df_test.to_excel(data_dir+str(filename)+'_predicted.xlsx')
+        df_label = pd.read_excel(data_dir+str(filename)+'_classified.xls')
+        ylabel = array(df_label['Fault_Class'].apply(f))
 
-        newbook = xlwt.Workbook("iso-8859-2")
-        newsheet = newbook.add_sheet('Sheet1', cell_overwrite_ok = True)
+        print('performance on ' + filename +'\n')
+        print("Accuracy: {:.2f}%".format(accuracy_score(ylabel, ypred) * 100))
+        print("\nF1 Score: {:.2f}".format(f1_score(ylabel, ypred) * 100))
 
-        # Find the column numbers for Reason and Action
-        for j in range(0, num_cols):
-            col = worksheet.cell_value(0, j)
-            if(col == 'Reason for Recall'):
-                Reason_Index = j
-            elif(col == 'Action'):
-                Action_Index = j
-            elif(col == 'Fault Class'):
-                Fault_Index = j
-        for i in range(1, num_rows):
-            number = (worksheet.cell_value(i, 0).strip()).encode('utf-8')
-            reason = (worksheet.cell_value(i, Reason_Index).strip()).encode('utf-8')
-            test_set.append((i, number, reason))
-        print 'Testing: '+filename
-        print str(len(test_set))
-        # Testing  - Using the highest score features
-        test_set_labels = testing(test_set, features[1:len(features)/2], P_tc, P_tc_, Pc, Pc_)
+    # # Total number of recalls in the training set
+    # N =  len(train_set);
+    # # Number of recalls that are computer-related
+    # C_list = [(w, u, v) for (w, u,v) in train_set if v != 'Not_Computer'];
+    # C = len(C_list);
+    # # Prior Probabilities
+    # Pc = float(C)/float(N);
+    # Pc_ = 1-Pc;
 
-        for k in range(0,num_cols):
-            newsheet.write(0, k, worksheet.cell_value(0, k));
-        newsheet.write(0, k+1, 'Fault_Class');
+    # # Training - Using the highest score features
+    # [P_tc, P_tc_] = training(train_set, features[1:len(features)/2])
+        # test_set = [];
+        # test_workbook = xlrd.open_workbook(data_dir+filename+'.xls')
+        # try:
+        #     worksheet = test_workbook.sheet_by_index(0)
+        # except:
+        #     worksheet = test_workbook.sheet_by_index(0)
+        # num_rows = worksheet.nrows
+        # num_cols = worksheet.ncols
 
-        test_set_labels = sorted(test_set_labels, key = itemgetter(3), reverse = True)
-        for (i, number, reason, fault_class) in test_set_labels:
-            for k in range(0,num_cols):
-                newsheet.write(i, k, worksheet.cell_value(i, k));
-            newsheet.write(i, k+1, fault_class);
+        # newbook = xlwt.Workbook("iso-8859-2")
+        # newsheet = newbook.add_sheet('Sheet1', cell_overwrite_ok = True)
 
-        newbook.save(data_dir+str(filename)+'_classified.xls')
+        # # Find the column numbers for Reason and Action
+        # for j in range(0, num_cols):
+        #     col = worksheet.cell_value(0, j)
+        #     if(col == 'Reason for Recall'):
+        #         Reason_Index = j
+        #     elif(col == 'Action'):
+        #         Action_Index = j
+        #     elif(col == 'Fault Class'):
+        #         Fault_Index = j
+        # for i in range(1, num_rows):
+        #     number = (worksheet.cell_value(i, 0).strip()).encode('utf-8')
+        #     reason = (worksheet.cell_value(i, Reason_Index).strip()).encode('utf-8')
+        #     test_set.append((i, number, reason))
+        # print 'Testing: '+filename
+        # print str(len(test_set))
+        # # Testing  - Using the highest score features
+        # # test_set_labels = testing(test_set, features[1:len(features)/2], P_tc, P_tc_, Pc, Pc_)
+
+        # for k in range(0,num_cols):
+        #     newsheet.write(0, k, worksheet.cell_value(0, k));
+        # newsheet.write(0, k+1, 'Fault_Class');
+
+        # test_set_labels = sorted(test_set_labels, key = itemgetter(3), reverse = True)
+        # for (i, number, reason, fault_class) in test_set_labels:
+        #     for k in range(0,num_cols):
+        #         newsheet.write(i, k, worksheet.cell_value(i, k));
+        #     newsheet.write(i, k+1, fault_class);
+
+        # newbook.save(data_dir+str(filename)+'_predicted.xls')
 
     dic.close();
 
