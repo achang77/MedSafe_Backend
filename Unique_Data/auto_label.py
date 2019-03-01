@@ -53,6 +53,7 @@ for dfile in datafiles:
         else:
             df.at[i,'Fault_Class'] = und
     
+    df = df.sort_values(by = ['Fault_Class'], ascending = False)
     writer = pd.ExcelWriter(dfile.split('.xls')[0] + '_auto.xlsx', engine='xlsxwriter')
     df.to_excel(writer,sheet_name='Sheet1', index=False)
     writer.save()
