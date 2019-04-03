@@ -7,6 +7,7 @@
 import mechanize
 import xlwt
 from BeautifulSoup import BeautifulSoup, Tag
+import babel 
 import os
 from time import sleep
 import re

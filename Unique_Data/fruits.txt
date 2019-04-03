@@ -1,0 +1,8 @@
+(lp0
+S'apple'
+p1
+aS'orange'
+p2
+aS'banana'
+p3
+a.

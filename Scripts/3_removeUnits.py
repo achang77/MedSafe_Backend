@@ -1,6 +1,6 @@
 import xlrd
 
-#from text2num import text2num
+from text2num import text2num
 import re
 #attempt to use specified rules to identify quantities and remove extraneous units
 def remUnits(text):

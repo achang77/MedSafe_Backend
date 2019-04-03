@@ -2,7 +2,7 @@ from __future__ import division
 import numpy as np
 import pandas as pd
 startYear = 2014
-endYear = 2018
+endYear = 2019
 #data_dir = './../Unique_Data/'
 data_dir = ''
 datafiles = []
@@ -32,6 +32,7 @@ not_computer_causes = {
 'Packaging change control',
 'Packaging process control'
 }
+
 total_c = 0
 total_not_c = 0 
 total_und = 0
@@ -58,6 +59,14 @@ for dfile in datafiles:
     df.to_excel(writer,sheet_name='Sheet1', index=False)
     writer.save()
 
+    df1 = df[df['Fault_Class'] != 'Undetermined']
+    writer = pd.ExcelWriter(dfile.split('.xls')[0] + '_auto_determined.xlsx', engine='xlsxwriter')
+    df1.to_excel(writer,sheet_name='Sheet1', index=False)
+    writer.save()
+
+
+
+
     c_records = len(df[df['Fault_Class'] == 'Computer'])
     not_c_records = len(df[df['Fault_Class'] == 'Not_Computer'])
     und = len(df[df['Fault_Class'] == 'Undetermined'])
@@ -73,7 +82,7 @@ for dfile in datafiles:
     
     print("undetermined records: " + str(und))
 
-    print("% undetermined: " + str( und / (und + c_records + not_c_records) ) )
+    print("%/ undetermined: " + str( und / (und + c_records + not_c_records) ) )
 
 print total_c
 print total_not_c

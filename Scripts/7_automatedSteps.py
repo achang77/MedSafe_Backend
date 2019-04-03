@@ -1,7 +1,7 @@
 #imports from other research scripts
-# retrieve = __import__('1_retrieveMerge')
-# unique = __import__('2_uniqueReasons')
-# procodes = __import__('4_procodeCompare')
+retrieve = __import__('1_retrieveMerge')
+unique = __import__('2_uniqueReasons')
+procodes = __import__('4_procodeCompare')
 testCompS1 = __import__('5_testCompNotCompRecalls')
 testCompS2 = __import__('6_recallClassification_Bayes_New_Data')
 
@@ -9,7 +9,7 @@ testCompS2 = __import__('6_recallClassification_Bayes_New_Data')
 import os
 
 #markers for which sections to execute
-pieces = {"Retrieve": False, "Unique": False, "ClassifyS1": True,
+pieces = {"Retrieve": True, "Unique": True, "ClassifyS1": True,
         "ClassifyS2": True, "Procodes": False}
 
 '''
@@ -24,7 +24,7 @@ pieces = {"Retrieve": False, "Unique": False, "ClassifyS1": True,
 #     os.chdir(basepath)
 
 #     #get data from 2006-2012
-#     for Year in range(2007, 2009):
+#     for Year in range(2018, 2019):
 #         print 'Year '+str(Year);
 #         startYear = Year;
 #         endYear = Year;
@@ -43,12 +43,13 @@ pieces = {"Retrieve": False, "Unique": False, "ClassifyS1": True,
 #     print "-------------------------------"
 #     print "Ensuring Unique Recalls"
 #     print "-------------------------------"
-#     files = os.listdir("./../Original_Data")
-#     # for Year in range(2007, 2009):
-#     #     filename = str(Year)+'.xls'
-#     #     files.append(filename)
-#     # for fl in files:
-#     #     print fl
+#     # files = os.listdir("./../Original_Data")
+#     files = []
+#     for Year in range(2018, 2019):
+#         filename = str(Year)+'.xls'
+#         files.append(filename)
+#     for fl in files:
+#         print fl
 #     unique.elimCopyReasons('./../Original_Data', files, './../Unique_Data')
 
 #     #files = ["Unique_Computer_Recalls_2007_2011_copy.xls"]
@@ -67,7 +68,7 @@ pieces = {"Retrieve": False, "Unique": False, "ClassifyS1": True,
     SCRIPT 4 --> Computer vs. Not Computer Classification Stage 2
 '''
 if(pieces["ClassifyS2"]):
-    testCompS2.classify()
+    testCompS2.use_sklearn_classify(load_features = False, load_model = False, custom = True)
 
 # '''
 #     SCRIPT 5 --> Classify Recalls (Procodes)
