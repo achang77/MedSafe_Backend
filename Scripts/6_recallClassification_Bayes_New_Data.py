@@ -57,7 +57,7 @@ def use_sklearn_classify(load_features = True, load_model = True, custom = True,
         features = get_features(train_set, train_text)
         # vect = CountVectorizer(vocabulary=features, binary=True)
         vect = CountVectorizer()
-        vect2 = TfidfTransformer()
+        # vect2 = TfidfTransformer()
 
         print('Vectorizer set')
 
@@ -74,9 +74,9 @@ def use_sklearn_classify(load_features = True, load_model = True, custom = True,
         xtrain = xtrain.str.lower()
         xtrain = vect.fit_transform(xtrain)
         # xtrain = vect2.fit_transform(xtrain)
-        # nb = MultinomialNB()
+        nb = MultinomialNB()
         # nb = SGDClassifier(loss='hinge', penalty='l2', alpha=1e-3, random_state=42, max_iter=50, tol=1e-3)
-        nb = LogisticRegression(random_state = 0)
+        # nb = LogisticRegression(random_state = 0)
         nb.fit(xtrain, ytrain)
         pickle.dump(nb, open('trained_model.txt', 'w'))
         print 'model dumped'
