@@ -82,8 +82,8 @@ def use_sklearn_classify(load_features = True, load_model = True, custom = True,
         print 'model dumped'
 
         # get filenames from Unique_Data
-    uniqueFiles = os.listdir("./../Unique_Data")
-    test_files = get_test(uniqueFiles,start_year = 2012, end_year = 2013)
+    uniqueFiles = os.listdir()
+    test_files = get_test(uniqueFiles, start_year=2012, end_year=2013)
 
     for filename in test_files:
         df_test = pd.read_excel(data_dir+str(filename)+test_file_suffix)
@@ -130,7 +130,7 @@ def use_sklearn_classify(load_features = True, load_model = True, custom = True,
 
         df_test = df_test.applymap(lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x)
         df_test.to_excel(data_dir+str(filename)+'_predicted.xlsx', index = False)
-
+#%%
 def selectFeatures(train_set, train_text, k):
     dic = open(data_dir+"best_keywords.txt", "wb")
     # Normalize the text
@@ -222,7 +222,7 @@ def selectFeatures(train_set, train_text, k):
     l = array(l)
     l = l[:,0]
     return l
-
+#%%
 def training(train_set, features):
     # Total number of training recalls
     N =  len(train_set);
@@ -258,7 +258,7 @@ def training(train_set, features):
         P_tc_[f] = float(N)/(float(Nc_)+float(B))
 
     return [P_tc, P_tc_]
-
+#%%
 def testing(test_set, features, P_tc, P_tc_, Pc, Pc_):
     test_set_labels = []
     for (rownum, number, reason) in test_set:
@@ -283,8 +283,8 @@ def testing(test_set, features, P_tc, P_tc_, Pc, Pc_):
         test_set_labels.append((rownum, number, reason, fault_class))
     return test_set_labels
 
+#%%
 def get_train_set_text(train_filename):
-
     train_workbook = xlrd.open_workbook(data_dir+train_filename)
     try:
         worksheet = train_workbook.sheet_by_name('sheet1')
@@ -338,6 +338,9 @@ def get_features(train_set, train_text, save_features = True):
         print 'features were dumped'
     return features
 
+
+
+#%%
 def get_test(uniqueFiles, start_year, end_year = 2100):
     test_files=[]
     #check each filename for format unique####.xls, add to list of filenames if it matches
@@ -350,64 +353,68 @@ def get_test(uniqueFiles, start_year, end_year = 2100):
     print test_files
     return test_files
 
-def classify():
-    # Get the training set of recalls
-    (train_set, train_text) = get_train_set_text()
-    test_files = get_test()
-    features = get_features(train_set, train_text)
+
+
+
+#%%
+# def classify():
+#     # Get the training set of recalls
+#     (train_set, train_text) = get_train_set_text()
+#     test_files = get_test()
+#     features = get_features(train_set, train_text)
     
-    # Total number of recalls in the training set
-    N =  len(train_set)
-    # Number of recalls that are computer-related
-    C_list = [(w, u, v) for (w, u,v) in train_set if v != 'Not_Computer']
-    C = len(C_list)
-    # Prior Probabilities
-    Pc = float(C)/float(N)
-    Pc_ = 1-Pc
-    (P_tc, P_tc_) = training(train_set, features[1:len(features)/2])
+#     # Total number of recalls in the training set
+#     N =  len(train_set)
+#     # Number of recalls that are computer-related
+#     C_list = [(w, u, v) for (w, u,v) in train_set if v != 'Not_Computer']
+#     C = len(C_list)
+#     # Prior Probabilities
+#     Pc = float(C)/float(N)
+#     Pc_ = 1-Pc
+#     (P_tc, P_tc_) = training(train_set, features[1:len(features)/2])
 
-    # Training - Using the highest score features
-    for filename in test_files:
-        test_set = []
-        test_workbook = xlrd.open_workbook(data_dir+filename+'.xls')
-        try:
-            worksheet = test_workbook.sheet_by_index(0)
-        except:
-            worksheet = test_workbook.sheet_by_index(0)
-        num_rows = worksheet.nrows
-        num_cols = worksheet.ncols
+#     # Training - Using the highest score features
+#     for filename in test_files:
+#         test_set = []
+#         test_workbook = xlrd.open_workbook(data_dir+filename+'.xls')
+#         try:
+#             worksheet = test_workbook.sheet_by_index(0)
+#         except:
+#             worksheet = test_workbook.sheet_by_index(0)
+#         num_rows = worksheet.nrows
+#         num_cols = worksheet.ncols
 
-        newbook = xlwt.Workbook("iso-8859-2")
-        newsheet = newbook.add_sheet('Sheet1', cell_overwrite_ok = True)
+#         newbook = xlwt.Workbook("iso-8859-2")
+#         newsheet = newbook.add_sheet('Sheet1', cell_overwrite_ok = True)
 
-        # Find the column numbers for Reason and Action
-        for j in range(0, num_cols):
-            col = worksheet.cell_value(0, j)
-            if(col == 'Reason for Recall'):
-                Reason_Index = j
-            elif(col == 'Action'):
-                Action_Index = j
-            elif(col == 'Fault Class'):
-                Fault_Index = j
-        for i in range(1, num_rows):
-            number = (worksheet.cell_value(i, 0).strip()).encode('utf-8')
-            reason = (worksheet.cell_value(i, Reason_Index).strip()).encode('utf-8')
-            test_set.append((i, number, reason))
-        print 'Testing: '+filename
-        print str(len(test_set))
+#         # Find the column numbers for Reason and Action
+#         for j in range(0, num_cols):
+#             col = worksheet.cell_value(0, j)
+#             if(col == 'Reason for Recall'):
+#                 Reason_Index = j
+#             elif(col == 'Action'):
+#                 Action_Index = j
+#             elif(col == 'Fault Class'):
+#                 Fault_Index = j
+#         for i in range(1, num_rows):
+#             number = (worksheet.cell_value(i, 0).strip()).encode('utf-8')
+#             reason = (worksheet.cell_value(i, Reason_Index).strip()).encode('utf-8')
+#             test_set.append((i, number, reason))
+#         print 'Testing: '+filename
+#         print str(len(test_set))
 
-        # Testing  - Using the highest score features
-        # test_set_labels = testing(test_set, features[1:len(features)/2], P_tc, P_tc_, Pc, Pc_)
+#         # Testing  - Using the highest score features
+#         # test_set_labels = testing(test_set, features[1:len(features)/2], P_tc, P_tc_, Pc, Pc_)
 
-        for k in range(0,num_cols):
-            newsheet.write(0, k, worksheet.cell_value(0, k));
-        newsheet.write(0, k+1, 'Fault_Class');
+#         for k in range(0,num_cols):
+#             newsheet.write(0, k, worksheet.cell_value(0, k));
+#         newsheet.write(0, k+1, 'Fault_Class');
 
-        test_set_labels = sorted(test_set_labels, key = itemgetter(3), reverse = True)
+#         test_set_labels = sorted(test_set_labels, key = itemgetter(3), reverse = True)
         
-        for (i, number, reason, fault_class) in test_set_labels:
-            for k in range(0,num_cols):
-                newsheet.write(i, k, worksheet.cell_value(i, k));
-            newsheet.write(i, k+1, fault_class);
+#         for (i, number, reason, fault_class) in test_set_labels:
+#             for k in range(0,num_cols):
+#                 newsheet.write(i, k, worksheet.cell_value(i, k));
+#             newsheet.write(i, k+1, fault_class);
 
-        newbook.save(data_dir+str(filename)+'_predicted.xls')
+#         newbook.save(data_dir+str(filename)+'_predicted.xls')
